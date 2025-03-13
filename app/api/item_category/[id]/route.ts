@@ -8,7 +8,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     const { id } = await params;
     if (!id) return NextResponse.json({ message: "ID requis." }, { status: 400 });
 
-    const category = await prisma.itemCategorie.findFirst({
+    const category = await prisma.itemCategory.findFirst({
       where: {
         id,
         state: { in: [0, 1, 2] },
@@ -37,17 +37,17 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     }
 
     // Vérification que la catégorie existe
-    const category = await prisma.itemCategorie.findUnique({ where: { id } });
+    const category = await prisma.itemCategory.findUnique({ where: { id } });
     if (!category) return NextResponse.json({ message: "Catégorie non trouvée." }, { status: 404 });
 
     // Vérification que le nom n'est pas déjà utilisé
-    const existingCategory = await prisma.itemCategorie.findFirst({
+    const existingCategory = await prisma.itemCategory.findFirst({
       where: { name, NOT: { id } },
     });
     if (existingCategory) return NextResponse.json({ message: "La catégorie existe déjà." }, { status: 400 });
 
     // Mise à jour de la catégorie
-    const updatedCategory = await prisma.itemCategorie.update({
+    const updatedCategory = await prisma.itemCategory.update({
       where: { id },
       data: { name, state },
     });
@@ -55,7 +55,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     // Log de mise à jour
     await createLog(
       "UPDATE",
-      "ItemCategorie",
+      "ItemCategory",
       id,
       category,
       updatedCategory,
@@ -75,13 +75,13 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     if (!id) return NextResponse.json({ message: "ID requis." }, { status: 400 });
 
     // Vérifier si la catégorie existe
-    const category = await prisma.itemCategorie.findUnique({ where: { id } });
+    const category = await prisma.itemCategory.findUnique({ where: { id } });
     if (!category) return NextResponse.json({ message: "Catégorie non trouvée." }, { status: 404 });
 
     if (category.state === 3) return NextResponse.json({ message: "Catégorie déjà archivée." }, { status: 400 });
 
     // Mettre `state = 3` au lieu de supprimer définitivement
-    const updatedCategory = await prisma.itemCategorie.update({
+    const updatedCategory = await prisma.itemCategory.update({
       where: { id },
       data: { state: 3 },
     });
@@ -89,7 +89,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     // Log d'archivage
     await createLog(
       "ARCHIVE",
-      "ItemCategorie",
+      "ItemCategory",
       id,
       category,
       updatedCategory,

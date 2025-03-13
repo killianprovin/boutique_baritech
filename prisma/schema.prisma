@@ -13,13 +13,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model ItemCategorie {
+model ItemCategory {
   id        String  @id @default(uuid())
   name      String  @unique
   state     Int     @default(0)
-  items     ItemCategoriePivot[]
-  stats     StatsItemCategorie?
-  StatsCustomers StatsItemCategorieCustomer[]
+  items     ItemCategoryPivot[]
+  stats     StatsItemCategory?
+  StatsCustomers StatsItemCategoryCustomer[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -29,7 +29,7 @@ model Item {
   name        String    @unique
   description String?
   state       Int       @default(0)
-  categories  ItemCategoriePivot[]
+  categories  ItemCategoryPivot[]
   prices      Price[]
   purchases   Purchase[]
   stats       StatsItem?
@@ -38,13 +38,13 @@ model Item {
   updatedAt   DateTime  @updatedAt
 }
 
-model ItemCategoriePivot {
+model ItemCategoryPivot {
   itemId       String
-  categorieId  String
+  categoryId  String
   item         Item         @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  categorie    ItemCategorie @relation(fields: [categorieId], references: [id], onDelete: Cascade)
+  category    ItemCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
-  @@id([itemId, categorieId])
+  @@id([itemId, categoryId])
 }
 
 model Price {
@@ -57,13 +57,13 @@ model Price {
   updatedAt DateTime @updatedAt
 }
 
-model CustomerCategorie {
+model CustomerCategory {
   id        String @id @default(uuid())
   name      String  @unique
   overdraft Int
   bonus     Boolean @default(false)
   state     Int     @default(0)
-  customers CustomerCategoriePivot[]
+  customers CustomerCategoryPivot[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -75,23 +75,23 @@ model Customer {
   nickname    String  @unique
   balance     Int     @default(0)
   state       Int     @default(0)
-  categories  CustomerCategoriePivot[]
+  categories  CustomerCategoryPivot[]
   deposits    Deposit[]
   purchases   Purchase[]
   stats       StatsCustomer?
   statsItems  StatsItemCustomer[]
-  StatsItemCategories StatsItemCategorieCustomer[]
+  StatsItemCategories StatsItemCategoryCustomer[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
-model CustomerCategoriePivot {
+model CustomerCategoryPivot {
   customerId   String
-  categorieId  String
+  categoryId  String
   customer     Customer         @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  categorie    CustomerCategorie @relation(fields: [categorieId], references: [id], onDelete: Cascade)
+  category    CustomerCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
-  @@id([customerId, categorieId])
+  @@id([customerId, categoryId])
 }
 
 model Deposit {
@@ -127,13 +127,13 @@ model StatsItem {
   item            Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
 }
 
-model StatsItemCategorie {
+model StatsItemCategory {
   id              String @id @default(uuid())
-  itemCategorieId String @unique
+  itemCategoryId String @unique
   totalSpend      Int      @default(0)
   purchaseCount   Int      @default(0)
   lastPurchaseAt  DateTime?
-  itemCategorie   ItemCategorie     @relation(fields: [itemCategorieId], references: [id], onDelete: Cascade)
+  itemCategory   ItemCategory     @relation(fields: [itemCategoryId], references: [id], onDelete: Cascade)
 }
 
 model StatsCustomer {
@@ -161,17 +161,17 @@ model StatsItemCustomer {
   @@unique([customerId, itemId])
 }
 
-model StatsItemCategorieCustomer {
+model StatsItemCategoryCustomer {
   id              String @id @default(uuid())
   customerId      String
-  itemCategorieId String
+  itemCategoryId String
   totalSpend      Int      @default(0)
   purchaseCount   Int      @default(0)
   lastPurchaseAt  DateTime?
   customer        Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  itemCategorie   ItemCategorie     @relation(fields: [itemCategorieId], references: [id], onDelete: Cascade)
+  itemCategory   ItemCategory     @relation(fields: [itemCategoryId], references: [id], onDelete: Cascade)
 
-  @@unique([customerId, itemCategorieId])
+  @@unique([customerId, itemCategoryId])
 }
 
 model User {

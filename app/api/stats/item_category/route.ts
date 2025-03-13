@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const stats = await prisma.statsItemCategorie.findMany();
+    const stats = await prisma.statsItemCategory.findMany();
     return NextResponse.json(stats, { status: 200 });
   } catch (error) {
     return NextResponse.json({ message: "Erreur serveur" }, { status: 500 });

@@ -6,11 +6,11 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     const { id } = await params;
     if (!id) return NextResponse.json({ message: "ID requis." }, { status: 400 });
 
-    const itemCategorie = await prisma.itemCategorie.findUnique({ where: { id } });
-    if (!itemCategorie) return NextResponse.json({ message: "Catégorie non trouvée." }, { status: 404 });
+    const itemCategory = await prisma.itemCategory.findUnique({ where: { id } });
+    if (!itemCategory) return NextResponse.json({ message: "Catégorie non trouvée." }, { status: 404 });
 
-    const stats = await prisma.statsItemCategorie.findUnique({
-      where: { itemCategorieId: id },
+    const stats = await prisma.statsItemCategory.findUnique({
+      where: { itemCategoryId: id },
     });
 
     if (!stats) return NextResponse.json({ message: "Statistiques non trouvées." }, { status: 404 });

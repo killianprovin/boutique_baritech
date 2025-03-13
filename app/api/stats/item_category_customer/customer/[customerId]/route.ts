@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function GET(
     req: Request,
-    { params }: { params: { customerId: string; itemCategorieId: string } }
+    { params }: { params: { customerId: string; itemCategoryId: string } }
 ) {
     try {
         const { customerId } = await params;
@@ -14,7 +14,7 @@ export async function GET(
         const customer = await prisma.customer.findUnique({ where: { id: customerId }});
         if (!customer) return NextResponse.json({ message: "Client non trouvé." }, { status: 404 });
   
-        const stats = await prisma.statsItemCategorieCustomer.findMany({
+        const stats = await prisma.statsItemCategoryCustomer.findMany({
             where: { customerId },
         });
 
