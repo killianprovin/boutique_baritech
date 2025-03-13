@@ -1,0 +1,198 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model ItemCategorie {
+  id        String  @id @default(uuid())
+  name      String  @unique
+  state     Int     @default(0)
+  items     ItemCategoriePivot[]
+  stats     StatsItemCategorie?
+  StatsCustomers StatsItemCategorieCustomer[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Item {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  state       Int       @default(0)
+  categories  ItemCategoriePivot[]
+  prices      Price[]
+  purchases   Purchase[]
+  stats       StatsItem?
+  statsCustomers  StatsItemCustomer[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model ItemCategoriePivot {
+  itemId       String
+  categorieId  String
+  item         Item         @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  categorie    ItemCategorie @relation(fields: [categorieId], references: [id], onDelete: Cascade)
+
+  @@id([itemId, categorieId])
+}
+
+model Price {
+  id        String @id @default(uuid())
+  amount    Int
+  itemId    String
+  item      Item  @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  purchases Purchase[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CustomerCategorie {
+  id        String @id @default(uuid())
+  name      String  @unique
+  overdraft Int
+  bonus     Boolean @default(false)
+  state     Int     @default(0)
+  customers CustomerCategoriePivot[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Customer {
+  id          String @id @default(uuid())
+  firstname   String
+  lastname    String
+  nickname    String  @unique
+  balance     Int     @default(0)
+  state       Int     @default(0)
+  categories  CustomerCategoriePivot[]
+  deposits    Deposit[]
+  purchases   Purchase[]
+  stats       StatsCustomer?
+  statsItems  StatsItemCustomer[]
+  StatsItemCategories StatsItemCategorieCustomer[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CustomerCategoriePivot {
+  customerId   String
+  categorieId  String
+  customer     Customer         @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  categorie    CustomerCategorie @relation(fields: [categorieId], references: [id], onDelete: Cascade)
+
+  @@id([customerId, categorieId])
+}
+
+model Deposit {
+  id        String @id @default(uuid())
+  amount    Int
+  status    Int   @default(0)
+  customerId    String?
+  customer  Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Purchase {
+  id        String @id @default(uuid())
+  amount    Int
+  status    Int   @default(0)
+  customerId String?
+  itemId    String?
+  priceId   String?
+  customer  Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  item      Item?  @relation(fields: [itemId], references: [id], onDelete: SetNull)
+  price     Price? @relation(fields: [priceId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model StatsItem {
+  id              String @id @default(uuid())
+  itemId          String @unique
+  totalSpend      Int      @default(0)
+  purchaseCount   Int      @default(0)
+  lastPurchaseAt  DateTime?
+  item            Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+}
+
+model StatsItemCategorie {
+  id              String @id @default(uuid())
+  itemCategorieId String @unique
+  totalSpend      Int      @default(0)
+  purchaseCount   Int      @default(0)
+  lastPurchaseAt  DateTime?
+  itemCategorie   ItemCategorie     @relation(fields: [itemCategorieId], references: [id], onDelete: Cascade)
+}
+
+model StatsCustomer {
+  id             String @id @default(uuid())
+  customerId     String @unique
+  totalDeposit   Int      @default(0)
+  totalSpend     Int      @default(0)
+  depositCount   Int      @default(0)
+  purchaseCount  Int      @default(0)
+  lastDepositAt  DateTime?
+  lastPurchaseAt DateTime?
+  customer       Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
+
+model StatsItemCustomer {
+  id            String @id @default(uuid())
+  customerId    String
+  itemId        String
+  totalSpend    Int      @default(0)
+  purchaseCount Int      @default(0)
+  lastPurchaseAt DateTime?
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  item          Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, itemId])
+}
+
+model StatsItemCategorieCustomer {
+  id              String @id @default(uuid())
+  customerId      String
+  itemCategorieId String
+  totalSpend      Int      @default(0)
+  purchaseCount   Int      @default(0)
+  lastPurchaseAt  DateTime?
+  customer        Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  itemCategorie   ItemCategorie     @relation(fields: [itemCategorieId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, itemCategorieId])
+}
+
+model User {
+  id        String @id @default(uuid())
+  username  String  @unique
+  promo     Int?
+  status    Int     @default(0)
+  logs      Log[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Log {
+  id        String @id @default(uuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  oldData   Json?
+  newData   Json?
+  createdAt DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
